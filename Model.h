@@ -8,15 +8,17 @@
 
 #include <GL/glew.h>
 
-struct MyMesh {
+#include <iostream>
+
+struct Mesh {
 	std::vector<float> vertices;
 	std::vector<unsigned int> indices;
 
 	unsigned vao, vbo, ebo;
 
-	MyMesh(std::vector<float> vert, std::vector<unsigned int> ind) : vertices(vert), indices(ind) {
+	Mesh(std::vector<float> vert, std::vector<unsigned int> ind) : vertices(vert), indices(ind) {
 		float* v = &vertices[0];
-		unsigned* i = &indices[0];
+		unsigned int* i = &indices[0];
 
 		glGenVertexArrays(1, &vao);
 		glBindVertexArray(vao);
@@ -33,32 +35,41 @@ struct MyMesh {
 
 		glBindVertexArray(0);
 	}
+
+	void render() {
+		glBindVertexArray(vao);
+		glDrawElements(GL_TRIANGLES, indices.size(), GL_UNSIGNED_INT, NULL);
+		glBindVertexArray(0);
+	}
 };
 
-struct MyModel {
-	std::vector<MyMesh*> meshes;
-
-	MyModel(const char* filename) { loadModel(filename); }
-
+struct Model {
+public:
+	std::vector<Mesh*> meshes;
+	Model(const char* filename) { loadModel(filename); }
+private:
 	void loadModel(const char* filename);
 	void processNodeRecursive(aiNode* node, const aiScene* scene);
-	MyMesh* createMesh(aiMesh* mesh, const aiScene* scene);
+	Mesh* createMesh(aiMesh* mesh, const aiScene* scene);
 };
 
-void MyModel::loadModel(const char* filepath) {
+void Model::loadModel(const char* filepath) {
 	Assimp::Importer importer;
 	const aiScene* scene = importer.ReadFile(filepath, aiProcess_Triangulate | aiProcess_GenSmoothNormals | aiProcess_FlipUVs | aiProcess_JoinIdenticalVertices);
 	processNodeRecursive(scene->mRootNode, scene);
 }
 
-void MyModel::processNodeRecursive(aiNode* node, const aiScene* scene){
+void Model::processNodeRecursive(aiNode* node, const aiScene* scene){
 	for (int i = 0; i < node->mNumMeshes; ++i) {
 		aiMesh* mesh = scene->mMeshes[node->mMeshes[i]];
 		this->meshes.push_back(createMesh(mesh, scene));
 	}
+
+	for (int i = 0; i < node->mNumChildren; ++i)
+		processNodeRecursive(node->mChildren[i], scene);
 }
 
-MyMesh* MyModel::createMesh(aiMesh* mesh, const aiScene* scene){
+Mesh* Model::createMesh(aiMesh* mesh, const aiScene* scene){
 	std::vector<float> vertices;
 	std::vector<unsigned int> indices;
 
@@ -76,5 +87,5 @@ MyMesh* MyModel::createMesh(aiMesh* mesh, const aiScene* scene){
 			indices.push_back(face.mIndices[j]);
 	}
 
-	return new MyMesh(vertices, indices);
+	return new Mesh(vertices, indices);
 }
