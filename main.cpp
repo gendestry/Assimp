@@ -9,6 +9,7 @@
 
 #include "Shader.h"
 #include "Camera.h"
+#include "Model.h"
 
 static void key_callback(GLFWwindow* window, int key, int scancode, int action, int mods);
 static void mouse_callback(GLFWwindow* window, double xpos, double ypos);
@@ -24,7 +25,6 @@ Shader* shader;
 Camera* camera;
 
 int main() {
-	
 	if (!glfwInit())
 		return -1;
 
@@ -48,13 +48,13 @@ int main() {
 
 	/* ACTUAL CODE */
 	glEnable(GL_DEPTH_TEST);
-	glEnable(GL_CULL_FACE);
-	glCullFace(GL_BACK);
+	//glEnable(GL_CULL_FACE);
+	//glCullFace(GL_BACK);
 	
-	shader = new Shader("vert.glsl", "frag.glsl");
+	shader = new Shader("modelvert.glsl", "modelfrag.glsl");
 	camera = new Camera({ 0.0f, 0.0f, -10.0f });
 
-	float vertices[] = {
+	/*float vertices[] = {
 		 // front
 		 1.0f,  1.0f, 1.0f,		
 		-1.0f,  1.0f, 1.0f,	    
@@ -152,9 +152,9 @@ int main() {
 		0.0f, -1.0f, 0.0f,
 		0.0f, -1.0f, 0.0f,
 		0.0f, -1.0f, 0.0f
-	};
+	};*/
 
-	GLuint vao, vbo, nbo;
+	/*GLuint vao, vbo, nbo;
 	glGenVertexArrays(1, &vao);
 	glBindVertexArray(vao);
 
@@ -168,7 +168,8 @@ int main() {
 	glBindBuffer(GL_ARRAY_BUFFER, nbo);
 	glBufferData(GL_ARRAY_BUFFER, sizeof(normals), normals, GL_STATIC_DRAW);
 	glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 0, 0);
-	glEnableVertexAttribArray(1);
+	glEnableVertexAttribArray(1);*/
+	
 
 	glm::mat4 projection, view, model;
 	model = glm::mat4(1.0);
@@ -181,7 +182,9 @@ int main() {
 	shader->setMat4("view", view);
 	shader->setMat4("proj", projection);
 
-	glClearColor(0.0, 0.4, 0.8,1.0);
+	glClearColor(0.0, 0.4, 0.8, 1.0);
+
+	Model m("untitled.obj");
 
 	while (!glfwWindowShouldClose(window)) {
 		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
@@ -191,8 +194,12 @@ int main() {
 		lastFrame = currentFrame;
 
 		move();
+		//std::cout << m.meshes.size() << std::endl;
 
-		model = glm::mat4(1.0);
+		for (int i = 0; i < m.meshes.size(); i++) {
+			m.meshes[i]->render();
+		}
+		/*model = glm::mat4(1.0);
 		shader->setMat4("model", model);
 		shader->setVec3("objectColor", { 0.8, 0.3, 0.0 });
 		glDrawArrays(GL_TRIANGLES, 0, 36);
@@ -211,15 +218,15 @@ int main() {
 		model = glm::translate(model, { -3.0, -2.0, 4.0 });
 		shader->setMat4("model", model);
 		shader->setVec3("objectColor", { 0.8, 0.2, 0.8 });
-		glDrawArrays(GL_TRIANGLES, 0, 36);
+		glDrawArrays(GL_TRIANGLES, 0, 36);*/
 
 		glfwSwapBuffers(window);
 		glfwPollEvents();
 	}
 
-	glDeleteBuffers(1, &vbo);
+	/*glDeleteBuffers(1, &vbo);
 	glDeleteBuffers(1, &nbo);
-	glDeleteVertexArrays(1, &vao);
+	glDeleteVertexArrays(1, &vao);*/
 
 	delete camera;
 	delete shader;
