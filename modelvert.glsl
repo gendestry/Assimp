@@ -6,9 +6,9 @@ uniform mat4 model;
 uniform mat4 view;
 uniform mat4 proj;
 
-out vec3 norm;
+out vec4 norm;
 
 void main() {
-	norm = anormals;
+	norm = transpose(inverse(model)) * vec4(anormals, 1.0); // if model * view then the light follows you
 	gl_Position = proj * view * model * vec4(apos, 1.0);
 }
