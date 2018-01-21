@@ -10,30 +10,41 @@
 
 #include <iostream>
 
+struct Vertex {
+	float xpos, ypos, zpos;
+	float xnorm, ynorm, znorm;
+};
+
 struct Mesh {
-	std::vector<float> vertices;
+	std::vector<Vertex> vertexes;
 	std::vector<unsigned int> indices;
 
 	unsigned vao, vbo, ebo;
 
-	Mesh(std::vector<float> vert, std::vector<unsigned int> ind) : vertices(vert), indices(ind) {
-		float* v = &vertices[0];
-		unsigned int* i = &indices[0];
-
+	Mesh(std::vector<Vertex> vert, std::vector<unsigned int> ind) : vertexes(vert), indices(ind) {
 		glGenVertexArrays(1, &vao);
 		glBindVertexArray(vao);
 
 		glGenBuffers(1, &vbo);
 		glBindBuffer(GL_ARRAY_BUFFER, vbo);
-		glBufferData(GL_ARRAY_BUFFER, sizeof(float) * vertices.size(), v, GL_STATIC_DRAW);
-		glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 0, 0);
+		glBufferData(GL_ARRAY_BUFFER, sizeof(Vertex) * vertexes.size(), &vertexes[0], GL_STATIC_DRAW);
 		glEnableVertexAttribArray(0);
+		glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, sizeof(Vertex), 0);
+		glEnableVertexAttribArray(1);
+		glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, sizeof(Vertex), (void*)(3 * sizeof(float)));
+		
 
 		glGenBuffers(1, &ebo);
 		glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, ebo);
-		glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(unsigned) * vertices.size(), i, GL_STATIC_DRAW);
+		glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(unsigned) * indices.size(), &indices[0], GL_STATIC_DRAW);
 
 		glBindVertexArray(0);
+	}
+
+	~Mesh() {
+		glDeleteBuffers(1, &ebo);
+		glDeleteBuffers(1, &vbo);
+		glDeleteVertexArrays(1, &vao);
 	}
 
 	void render() {
@@ -47,11 +58,18 @@ struct Model {
 public:
 	std::vector<Mesh*> meshes;
 	Model(const char* filename) { loadModel(filename); }
+	void render();
 private:
 	void loadModel(const char* filename);
 	void processNodeRecursive(aiNode* node, const aiScene* scene);
-	Mesh* createMesh(aiMesh* mesh, const aiScene* scene);
+	Mesh* createMesh(aiMesh* mesh);
 };
+
+void Model::render() {
+	for (unsigned i = 0; i < meshes.size(); i++) {
+		meshes[i]->render();
+	}
+}
 
 void Model::loadModel(const char* filepath) {
 	Assimp::Importer importer;
@@ -62,23 +80,30 @@ void Model::loadModel(const char* filepath) {
 void Model::processNodeRecursive(aiNode* node, const aiScene* scene){
 	for (int i = 0; i < node->mNumMeshes; ++i) {
 		aiMesh* mesh = scene->mMeshes[node->mMeshes[i]];
-		this->meshes.push_back(createMesh(mesh, scene));
+		this->meshes.push_back(createMesh(mesh));
 	}
 
 	for (int i = 0; i < node->mNumChildren; ++i)
 		processNodeRecursive(node->mChildren[i], scene);
 }
 
-Mesh* Model::createMesh(aiMesh* mesh, const aiScene* scene){
-	std::vector<float> vertices;
+Mesh* Model::createMesh(aiMesh* mesh){
+	std::vector<Vertex> vertexes;
 	std::vector<unsigned int> indices;
 
 	for (int i = 0; i < mesh->mNumVertices; ++i) {
+		Vertex vertex;
 		if (mesh->HasPositions()) {
-			vertices.push_back(mesh->mVertices[i].x);
-			vertices.push_back(mesh->mVertices[i].y);
-			vertices.push_back(mesh->mVertices[i].z);
+			vertex.xpos = mesh->mVertices[i].x;
+			vertex.ypos = mesh->mVertices[i].y;
+			vertex.zpos = mesh->mVertices[i].z;
 		}
+		if (mesh->HasNormals()) {
+			vertex.xnorm = mesh->mNormals[i].x;
+			vertex.ynorm = mesh->mNormals[i].y;
+			vertex.znorm = mesh->mNormals[i].z;
+		}
+		vertexes.push_back(vertex);
 	}
 
 	for (int i = 0; i < mesh->mNumFaces; ++i) {
@@ -87,5 +112,5 @@ Mesh* Model::createMesh(aiMesh* mesh, const aiScene* scene){
 			indices.push_back(face.mIndices[j]);
 	}
 
-	return new Mesh(vertices, indices);
+	return new Mesh(vertexes, indices);
 }

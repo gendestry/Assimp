@@ -48,128 +48,9 @@ int main() {
 
 	/* ACTUAL CODE */
 	glEnable(GL_DEPTH_TEST);
-	//glEnable(GL_CULL_FACE);
-	//glCullFace(GL_BACK);
 	
 	shader = new Shader("modelvert.glsl", "modelfrag.glsl");
 	camera = new Camera({ 0.0f, 0.0f, -10.0f });
-
-	/*float vertices[] = {
-		 // front
-		 1.0f,  1.0f, 1.0f,		
-		-1.0f,  1.0f, 1.0f,	    
-		-1.0f, -1.0f, 1.0f,	    
-		-1.0f, -1.0f, 1.0f,	    
-		 1.0f, -1.0f, 1.0f,	    
-		 1.0f,  1.0f, 1.0f,
-
-		 // back
-		-1.0f,  1.0f, -1.0f,
-		 1.0f,  1.0f, -1.0f,
-		 1.0f, -1.0f, -1.0f,
-		 1.0f, -1.0f, -1.0f,
-		-1.0f, -1.0f, -1.0f,
-		-1.0f,  1.0f, -1.0f,
-
-		 // left
-		-1.0f,  1.0f,  1.0f,
-		-1.0f,  1.0f, -1.0f,
-		-1.0f, -1.0f, -1.0f,
-		-1.0f, -1.0f, -1.0f,
-		-1.0f, -1.0f,  1.0f,
-		-1.0f,  1.0f,  1.0f,
-
-		 // right
-		 1.0f,  1.0f, -1.0f,
-		 1.0f,  1.0f,  1.0f,
-		 1.0f, -1.0f,  1.0f,
-		 1.0f, -1.0f,  1.0f,
-		 1.0f, -1.0f, -1.0f,
-		 1.0f,  1.0f, -1.0f,
-
-		 // top
-		 1.0f,  1.0f, -1.0f,
-		-1.0f,  1.0f, -1.0f,
-		-1.0f,  1.0f,  1.0f,
-		-1.0f,  1.0f,  1.0f,
-		 1.0f,  1.0f,  1.0f,
-		 1.0f,  1.0f, -1.0f,
-
-		 // bottom
-		-1.0f, -1.0f, -1.0f,
-		 1.0f, -1.0f, -1.0f,
-		 1.0f, -1.0f,  1.0f,
-		 1.0f, -1.0f,  1.0f,
-	    -1.0f, -1.0f,  1.0f,
-	    -1.0f, -1.0f, -1.0f,
-	};
-
-	float normals[] = {
-		// front
-		0.0f, 0.0f, 1.0f,
-		0.0f, 0.0f, 1.0f,
-		0.0f, 0.0f, 1.0f,
-		0.0f, 0.0f, 1.0f,
-		0.0f, 0.0f, 1.0f,
-		0.0f, 0.0f, 1.0f,
-
-		// back
-		0.0f, 0.0f, -1.0f,
-		0.0f, 0.0f, -1.0f,
-		0.0f, 0.0f, -1.0f,
-		0.0f, 0.0f, -1.0f,
-		0.0f, 0.0f, -1.0f,
-		0.0f, 0.0f, -1.0f,
-
-		// left
-		-1.0f, 0.0f, 0.0f,
-		-1.0f, 0.0f, 0.0f,
-		-1.0f, 0.0f, 0.0f,
-		-1.0f, 0.0f, 0.0f,
-		-1.0f, 0.0f, 0.0f,
-		-1.0f, 0.0f, 0.0f,
-
-		// right
-		1.0f, 0.0f, 0.0f,
-		1.0f, 0.0f, 0.0f,
-		1.0f, 0.0f, 0.0f,
-		1.0f, 0.0f, 0.0f,
-		1.0f, 0.0f, 0.0f,
-		1.0f, 0.0f, 0.0f,
-
-		// top
-		0.0f, 1.0f, 0.0f,
-		0.0f, 1.0f, 0.0f,
-		0.0f, 1.0f, 0.0f,
-		0.0f, 1.0f, 0.0f,
-		0.0f, 1.0f, 0.0f,
-		0.0f, 1.0f, 0.0f,
-
-		// bottom
-		0.0f, -1.0f, 0.0f,
-		0.0f, -1.0f, 0.0f,
-		0.0f, -1.0f, 0.0f,
-		0.0f, -1.0f, 0.0f,
-		0.0f, -1.0f, 0.0f,
-		0.0f, -1.0f, 0.0f
-	};*/
-
-	/*GLuint vao, vbo, nbo;
-	glGenVertexArrays(1, &vao);
-	glBindVertexArray(vao);
-
-	glGenBuffers(1, &vbo);
-	glBindBuffer(GL_ARRAY_BUFFER, vbo);
-	glBufferData(GL_ARRAY_BUFFER, sizeof(vertices), vertices, GL_STATIC_DRAW);
-	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 0, 0);
-	glEnableVertexAttribArray(0);
-
-	glGenBuffers(1, &nbo);
-	glBindBuffer(GL_ARRAY_BUFFER, nbo);
-	glBufferData(GL_ARRAY_BUFFER, sizeof(normals), normals, GL_STATIC_DRAW);
-	glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 0, 0);
-	glEnableVertexAttribArray(1);*/
-	
 
 	glm::mat4 projection, view, model;
 	model = glm::mat4(1.0);
@@ -184,6 +65,8 @@ int main() {
 
 	glClearColor(0.0, 0.4, 0.8, 1.0);
 
+	Model s("text.obj");
+	Model s2("sphere2.obj");
 	Model m("untitled.obj");
 
 	while (!glfwWindowShouldClose(window)) {
@@ -194,39 +77,25 @@ int main() {
 		lastFrame = currentFrame;
 
 		move();
-		//std::cout << m.meshes.size() << std::endl;
 
-		for (int i = 0; i < m.meshes.size(); i++) {
-			m.meshes[i]->render();
-		}
-		/*model = glm::mat4(1.0);
+		model = glm::mat4();
 		shader->setMat4("model", model);
-		shader->setVec3("objectColor", { 0.8, 0.3, 0.0 });
-		glDrawArrays(GL_TRIANGLES, 0, 36);
-		
-		model = glm::translate(model, { 5.0, 0.0, 5.0 });
+		shader->setVec3("objectColor", {1.0, 0.4, 0.6});
+		m.render();
+			
+		model = glm::translate(model, {3.0,0.0,0.0});
 		shader->setMat4("model", model);
-		shader->setVec3("objectColor", { 0.2, 0.3, 0.8 });
-		glDrawArrays(GL_TRIANGLES, 0, 36);
-		
-		model = glm::translate(model, { -13.0, 2.0, 3.0 });
+		shader->setVec3("objectColor", { 1.0, 0.9, 0.2 });
+		s.render();
+
+		model = glm::translate(model, { -6.0,0.0,0.0 });
 		shader->setMat4("model", model);
-		shader->setVec3("objectColor", { 0.0, 0.8, 0.3 });
-		glDrawArrays(GL_TRIANGLES, 0, 36);
-		
-		model = glm::mat4(1.0);
-		model = glm::translate(model, { -3.0, -2.0, 4.0 });
-		shader->setMat4("model", model);
-		shader->setVec3("objectColor", { 0.8, 0.2, 0.8 });
-		glDrawArrays(GL_TRIANGLES, 0, 36);*/
+		shader->setVec3("objectColor", { 0.2, 0.8, 0.5 });
+		s2.render();
 
 		glfwSwapBuffers(window);
 		glfwPollEvents();
 	}
-
-	/*glDeleteBuffers(1, &vbo);
-	glDeleteBuffers(1, &nbo);
-	glDeleteVertexArrays(1, &vao);*/
 
 	delete camera;
 	delete shader;
@@ -264,7 +133,7 @@ static void mouse_callback(GLFWwindow* window, double xpos, double ypos) {
 }
 
 void move() {
-	float speed = 0.08f; // temp
+	float speed = 0.04f; // temp
 
 	/* LEFT -RIGHT */
 	if (glfwGetKey(window, GLFW_KEY_A) == GLFW_PRESS) {
