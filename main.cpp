@@ -1,5 +1,3 @@
-#define STB_IMAGE_IMPLEMENTATION
-
 #include <GL/glew.h>
 #include <GLFW/glfw3.h>
 #include <iostream>
@@ -13,6 +11,7 @@
 
 static void key_callback(GLFWwindow* window, int key, int scancode, int action, int mods);
 static void mouse_callback(GLFWwindow* window, double xpos, double ypos);
+static void update();
 static void move();
 
 float deltaTime = 0.0f;
@@ -55,43 +54,21 @@ int main() {
 	glm::mat4 projection, view, model;
 	model = glm::mat4(1.0);
 	view = camera->getViewNatrix();
-	projection = glm::perspective(glm::radians(45.0f), (float)SCR_WIDTH / (float)SCR_HEIGHT, 0.1f, 100.0f);
+	projection = glm::perspective(glm::radians(45.0f), (float)SCR_WIDTH / (float)SCR_HEIGHT, 0.1f, 500.0f);
 
 	shader->use();
-
 	shader->setMat4("model", model);
 	shader->setMat4("view", view);
 	shader->setMat4("proj", projection);
 
 	glClearColor(0.0, 0.4, 0.8, 1.0);
 
-	Model s("text.obj");
-	Model s2("sphere2.obj");
-	Model m("untitled.obj");
+	Model m("Resources/statue/statue.obj");
 
 	while (!glfwWindowShouldClose(window)) {
-		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+		update();
 
-		float currentFrame = glfwGetTime();
-		deltaTime = currentFrame - lastFrame;
-		lastFrame = currentFrame;
-
-		move();
-
-		model = glm::mat4();
-		shader->setMat4("model", model);
-		shader->setVec3("objectColor", {1.0, 0.4, 0.6});
-		m.render();
-			
-		model = glm::translate(model, {3.0,0.0,0.0});
-		shader->setMat4("model", model);
-		shader->setVec3("objectColor", { 1.0, 0.9, 0.2 });
-		s.render();
-
-		model = glm::translate(model, { -6.0,0.0,0.0 });
-		shader->setMat4("model", model);
-		shader->setVec3("objectColor", { 0.2, 0.8, 0.5 });
-		s2.render();
+		m.render(*shader);
 
 		glfwSwapBuffers(window);
 		glfwPollEvents();
@@ -104,36 +81,18 @@ int main() {
 	return 0;
 }
 
-static void key_callback(GLFWwindow* window, int key, int scancode, int action, int mods) {
-	if (key == GLFW_KEY_ESCAPE && action == GLFW_PRESS)
-		glfwSetWindowShouldClose(window, GLFW_TRUE);
-}
+static void update() {
+	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
-static void mouse_callback(GLFWwindow* window, double xpos, double ypos) {
-	static double oldX, oldY;
-	static bool first = true;
-	float speed = 0.1f;
+	float currentFrame = glfwGetTime();
+	deltaTime = currentFrame - lastFrame;
+	lastFrame = currentFrame;
 
-	if (first) {
-		oldX = xpos;
-		oldY = ypos;
-		first = false;
-	}
-	else {
-		double dx = xpos - oldX;
-		double dy = ypos - oldY;
-
-		oldX = xpos;
-		oldY = ypos;
-
-		camera->rotate({ dx * speed, 0.0f, 0.0f });
-		camera->rotate({ 0.0f, dy * speed, 0.0f });
-		shader->setMat4("view", camera->getViewNatrix());
-	}
+	move();
 }
 
 void move() {
-	float speed = 0.04f; // temp
+	float speed = 0.06f; // temp
 
 	/* LEFT -RIGHT */
 	if (glfwGetKey(window, GLFW_KEY_A) == GLFW_PRESS) {
@@ -162,6 +121,34 @@ void move() {
 	}
 	else if (glfwGetKey(window, GLFW_KEY_LEFT_SHIFT) == GLFW_PRESS) {
 		camera->move({ 0, speed, 0 });
+		shader->setMat4("view", camera->getViewNatrix());
+	}
+}
+
+static void key_callback(GLFWwindow* window, int key, int scancode, int action, int mods) {
+	if (key == GLFW_KEY_ESCAPE && action == GLFW_PRESS)
+		glfwSetWindowShouldClose(window, GLFW_TRUE);
+}
+
+static void mouse_callback(GLFWwindow* window, double xpos, double ypos) {
+	static double oldX, oldY;
+	static bool first = true;
+	float speed = 0.07f;
+
+	if (first) {
+		oldX = xpos;
+		oldY = ypos;
+		first = false;
+	}
+	else {
+		double dx = xpos - oldX;
+		double dy = ypos - oldY;
+
+		oldX = xpos;
+		oldY = ypos;
+
+		camera->rotate({ dx * speed, 0.0f, 0.0f });
+		camera->rotate({ 0.0f, dy * speed, 0.0f });
 		shader->setMat4("view", camera->getViewNatrix());
 	}
 }

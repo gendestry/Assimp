@@ -1,108 +1,77 @@
 #pragma once
+#define STB_IMAGE_IMPLEMENTATION
+
 #include <vector>
+#include <iostream>
+#include <string>
 
 #include <assimp/cimport.h>
 #include <assimp/scene.h>
 #include <assimp/postprocess.h>
 #include <assimp/Importer.hpp>
 
-#include <GL/glew.h>
+#include "stb_image.h"
+#include "Shader.h"
+#include "Mesh.h"
 
-#include <iostream>
-
-struct Vertex {
-	float xpos, ypos, zpos;
-	float xnorm, ynorm, znorm;
-};
-
-struct Mesh {
-	std::vector<Vertex> vertexes;
-	std::vector<unsigned int> indices;
-
-	unsigned vao, vbo, ebo;
-
-	Mesh(std::vector<Vertex> vert, std::vector<unsigned int> ind) : vertexes(vert), indices(ind) {
-		glGenVertexArrays(1, &vao);
-		glBindVertexArray(vao);
-
-		glGenBuffers(1, &vbo);
-		glBindBuffer(GL_ARRAY_BUFFER, vbo);
-		glBufferData(GL_ARRAY_BUFFER, sizeof(Vertex) * vertexes.size(), &vertexes[0], GL_STATIC_DRAW);
-		glEnableVertexAttribArray(0);
-		glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, sizeof(Vertex), 0);
-		glEnableVertexAttribArray(1);
-		glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, sizeof(Vertex), (void*)(3 * sizeof(float)));
-		
-
-		glGenBuffers(1, &ebo);
-		glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, ebo);
-		glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(unsigned) * indices.size(), &indices[0], GL_STATIC_DRAW);
-
-		glBindVertexArray(0);
-	}
-
-	~Mesh() {
-		glDeleteBuffers(1, &ebo);
-		glDeleteBuffers(1, &vbo);
-		glDeleteVertexArrays(1, &vao);
-	}
-
-	void render() {
-		glBindVertexArray(vao);
-		glDrawElements(GL_TRIANGLES, indices.size(), GL_UNSIGNED_INT, NULL);
-		glBindVertexArray(0);
-	}
-};
-
-struct Model {
+class Model {
 public:
-	std::vector<Mesh*> meshes;
 	Model(const char* filename) { loadModel(filename); }
-	void render();
+	void render(const Shader& shader);
 private:
-	void loadModel(const char* filename);
+	std::vector<Mesh*> meshes;
+	std::string directory;
+
+	void loadModel(std::string filename);
 	void processNodeRecursive(aiNode* node, const aiScene* scene);
-	Mesh* createMesh(aiMesh* mesh);
+	Mesh* createMesh(aiMesh* mesh, const aiScene* scene);
 };
 
-void Model::render() {
-	for (unsigned i = 0; i < meshes.size(); i++) {
-		meshes[i]->render();
-	}
+void Model::render(const Shader& shader) {
+	for (unsigned i = 0; i < meshes.size(); i++)
+		meshes[i]->render(shader);
 }
 
-void Model::loadModel(const char* filepath) {
+void Model::loadModel(std::string filepath) {
 	Assimp::Importer importer;
 	const aiScene* scene = importer.ReadFile(filepath, aiProcess_Triangulate | aiProcess_GenSmoothNormals | aiProcess_FlipUVs | aiProcess_JoinIdenticalVertices);
-	processNodeRecursive(scene->mRootNode, scene);
+
+	if (!scene || scene->mFlags & AI_SCENE_FLAGS_INCOMPLETE || !scene->mRootNode)
+		std::cout << "Couldnt load the damn model.....you done goofed" << std::endl;
+	else {
+		directory = filepath.substr(0, filepath.find_last_of('/'));
+		processNodeRecursive(scene->mRootNode, scene);
+	}
+		
 }
 
 void Model::processNodeRecursive(aiNode* node, const aiScene* scene){
 	for (int i = 0; i < node->mNumMeshes; ++i) {
 		aiMesh* mesh = scene->mMeshes[node->mMeshes[i]];
-		this->meshes.push_back(createMesh(mesh));
+		this->meshes.push_back(createMesh(mesh, scene));
 	}
 
 	for (int i = 0; i < node->mNumChildren; ++i)
 		processNodeRecursive(node->mChildren[i], scene);
 }
 
-Mesh* Model::createMesh(aiMesh* mesh){
+Mesh* Model::createMesh(aiMesh* mesh, const aiScene* scene){
 	std::vector<Vertex> vertexes;
 	std::vector<unsigned int> indices;
 
 	for (int i = 0; i < mesh->mNumVertices; ++i) {
 		Vertex vertex;
 		if (mesh->HasPositions()) {
-			vertex.xpos = mesh->mVertices[i].x;
-			vertex.ypos = mesh->mVertices[i].y;
-			vertex.zpos = mesh->mVertices[i].z;
+			vertex.position.x = mesh->mVertices[i].x;
+			vertex.position.y = mesh->mVertices[i].y;
+			vertex.position.z = mesh->mVertices[i].z;
 		}
 		if (mesh->HasNormals()) {
-			vertex.xnorm = mesh->mNormals[i].x;
-			vertex.ynorm = mesh->mNormals[i].y;
-			vertex.znorm = mesh->mNormals[i].z;
+			vertex.normal.x = mesh->mNormals[i].x;
+			vertex.normal.y = mesh->mNormals[i].y;
+			vertex.normal.z = mesh->mNormals[i].z;
 		}
+
 		vertexes.push_back(vertex);
 	}
 
