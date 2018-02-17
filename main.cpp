@@ -8,6 +8,7 @@
 #include "Shader.h"
 #include "Camera.h"
 #include "Model.h"
+#include "Texture.h"
 
 static void key_callback(GLFWwindow* window, int key, int scancode, int action, int mods);
 static void mouse_callback(GLFWwindow* window, double xpos, double ypos);
@@ -30,7 +31,7 @@ int main() {
 	glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 3);
 	glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 3);
 
-	window = glfwCreateWindow(SCR_WIDTH, SCR_HEIGHT, "Hello World", NULL, NULL);
+	window = glfwCreateWindow(SCR_WIDTH, SCR_HEIGHT, "Assimp kill me!", NULL, NULL);
 
 	if (!window) {
 		glfwTerminate();
@@ -45,8 +46,10 @@ int main() {
 	if (glewInit() != 0)
 		return -1;
 
-	/* ACTUAL CODE */
+	/* ------------------- ACTUAL CODE ------------------- */
+
 	glEnable(GL_DEPTH_TEST);
+	glClearColor(0.0, 0.4, 0.8, 1.0);
 	
 	shader = new Shader("modelvert.glsl", "modelfrag.glsl");
 	camera = new Camera({ 0.0f, 0.0f, -10.0f });
@@ -61,9 +64,8 @@ int main() {
 	shader->setMat4("view", view);
 	shader->setMat4("proj", projection);
 
-	glClearColor(0.0, 0.4, 0.8, 1.0);
-
 	Model m("Resources/statue/statue.obj");
+	Texture t("Resources/white.jpg");
 
 	while (!glfwWindowShouldClose(window)) {
 		update();
@@ -91,7 +93,7 @@ static void update() {
 	move();
 }
 
-void move() {
+static void move() {
 	float speed = 0.06f; // temp
 
 	/* LEFT -RIGHT */

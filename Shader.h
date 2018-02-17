@@ -98,6 +98,10 @@ public:
 		glDeleteShader(ID);
 	}
 
+	inline void setInt(const char* name, const int &value) const {
+		glUniform1i(glGetUniformLocation(ID, name), value);
+	}
+
 	inline void setFloat(const char* name, const float &value) const {
 		glUniform1f(glGetUniformLocation(ID, name), value);
 	}

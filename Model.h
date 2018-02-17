@@ -1,5 +1,4 @@
 #pragma once
-#define STB_IMAGE_IMPLEMENTATION
 
 #include <vector>
 #include <iostream>
@@ -10,9 +9,9 @@
 #include <assimp/postprocess.h>
 #include <assimp/Importer.hpp>
 
-#include "stb_image.h"
 #include "Shader.h"
 #include "Mesh.h"
+#include "Texture.h"
 
 class Model {
 public:
@@ -37,7 +36,7 @@ void Model::loadModel(std::string filepath) {
 	const aiScene* scene = importer.ReadFile(filepath, aiProcess_Triangulate | aiProcess_GenSmoothNormals | aiProcess_FlipUVs | aiProcess_JoinIdenticalVertices);
 
 	if (!scene || scene->mFlags & AI_SCENE_FLAGS_INCOMPLETE || !scene->mRootNode)
-		std::cout << "Couldnt load the damn model.....you done goofed" << std::endl;
+		std::cout << "Couldn't load the model\n";
 	else {
 		directory = filepath.substr(0, filepath.find_last_of('/'));
 		processNodeRecursive(scene->mRootNode, scene);
@@ -58,19 +57,14 @@ void Model::processNodeRecursive(aiNode* node, const aiScene* scene){
 Mesh* Model::createMesh(aiMesh* mesh, const aiScene* scene){
 	std::vector<Vertex> vertexes;
 	std::vector<unsigned int> indices;
+	std::vector<Texture> textures;
 
 	for (int i = 0; i < mesh->mNumVertices; ++i) {
 		Vertex vertex;
-		if (mesh->HasPositions()) {
-			vertex.position.x = mesh->mVertices[i].x;
-			vertex.position.y = mesh->mVertices[i].y;
-			vertex.position.z = mesh->mVertices[i].z;
-		}
-		if (mesh->HasNormals()) {
-			vertex.normal.x = mesh->mNormals[i].x;
-			vertex.normal.y = mesh->mNormals[i].y;
-			vertex.normal.z = mesh->mNormals[i].z;
-		}
+
+		vertex.position = { mesh->mVertices[i].x, mesh->mVertices[i].y, mesh->mVertices[i].z };
+		vertex.normal = mesh->HasNormals() ? glm::vec3(mesh->mNormals[i].x, mesh->mNormals[i].y, mesh->mNormals[i].z) : glm::vec3(0, 0, 0);
+		vertex.texcoord = mesh->HasTextureCoords(0) ? glm::vec2(mesh->mTextureCoords[0][i].x, mesh->mTextureCoords[0][i].y) : glm::vec2(0, 0);
 
 		vertexes.push_back(vertex);
 	}
@@ -81,5 +75,18 @@ Mesh* Model::createMesh(aiMesh* mesh, const aiScene* scene){
 			indices.push_back(face.mIndices[j]);
 	}
 
-	return new Mesh(vertexes, indices);
+	for (unsigned i = 0; i < scene->mNumMaterials; i++) {
+		const aiMaterial* mat = scene->mMaterials[i];
+		// TODO: add multiple texture type support
+		
+		if (mat->GetTextureCount(aiTextureType_DIFFUSE) > 0) {
+			aiString path;
+			mat->GetTexture(aiTextureType_DIFFUSE, 0, &path, 0, 0, 0, 0, 0);
+			textures.emplace_back(directory + "/" + path.data);
+		}
+		if (textures.size() != i + 1)
+			textures.emplace_back("Resources/white.jpg");
+	}
+
+	return new Mesh(vertexes, indices, textures);
 }
