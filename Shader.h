@@ -10,7 +10,6 @@
 
 class Shader {
 private:
-	
 	void check(GLuint shader, std::string type) {
 		GLint success;
 		GLchar infoLog[1024];
@@ -30,6 +29,7 @@ private:
 			}
 		}
 	}
+	// TODO: add unordered map for storing UniformLocations
 public:
 	int ID;
 	Shader(const char* vert, const char* frag, const char* geo = nullptr) {

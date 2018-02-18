@@ -8,7 +8,6 @@
 #include "Shader.h"
 #include "Camera.h"
 #include "Model.h"
-#include "Texture.h"
 
 static void key_callback(GLFWwindow* window, int key, int scancode, int action, int mods);
 static void mouse_callback(GLFWwindow* window, double xpos, double ypos);
@@ -65,7 +64,6 @@ int main() {
 	shader->setMat4("proj", projection);
 
 	Model m("Resources/statue/statue.obj");
-	Texture t("Resources/white.jpg");
 
 	while (!glfwWindowShouldClose(window)) {
 		update();

@@ -47,7 +47,7 @@ void Model::loadModel(std::string filepath) {
 void Model::processNodeRecursive(aiNode* node, const aiScene* scene){
 	for (int i = 0; i < node->mNumMeshes; ++i) {
 		aiMesh* mesh = scene->mMeshes[node->mMeshes[i]];
-		this->meshes.push_back(createMesh(mesh, scene));
+		meshes.push_back(createMesh(mesh, scene));
 	}
 
 	for (int i = 0; i < node->mNumChildren; ++i)
@@ -75,6 +75,7 @@ Mesh* Model::createMesh(aiMesh* mesh, const aiScene* scene){
 			indices.push_back(face.mIndices[j]);
 	}
 
+	int diffuse = 0, spec = 0;
 	for (unsigned i = 0; i < scene->mNumMaterials; i++) {
 		const aiMaterial* mat = scene->mMaterials[i];
 		// TODO: add multiple texture type support
@@ -82,10 +83,13 @@ Mesh* Model::createMesh(aiMesh* mesh, const aiScene* scene){
 		if (mat->GetTextureCount(aiTextureType_DIFFUSE) > 0) {
 			aiString path;
 			mat->GetTexture(aiTextureType_DIFFUSE, 0, &path, 0, 0, 0, 0, 0);
-			textures.emplace_back(directory + "/" + path.data);
+			textures.emplace_back(directory + "/" + path.data, DIFFUSE);
+			diffuse++;
 		}
-		if (textures.size() != i + 1)
-			textures.emplace_back("Resources/white.jpg");
+		if (diffuse != i + 1) {
+			textures.emplace_back("Resources/white.jpg", DIFFUSE);
+			diffuse++;
+		}
 	}
 
 	return new Mesh(vertexes, indices, textures);

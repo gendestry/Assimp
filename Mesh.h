@@ -48,6 +48,9 @@ Mesh::Mesh(std::vector<Vertex> vert, std::vector<unsigned int> ind, std::vector<
 }
 
 Mesh::~Mesh() {
+	for (int i = 0; i < textures.size(); i++)
+		glDeleteTextures(1, &textures[i].id);
+
 	textures.clear();
 
 	glDeleteBuffers(1, &ebo);
@@ -56,13 +59,10 @@ Mesh::~Mesh() {
 }
 
 void Mesh::render(const Shader& shader) {
-	/*for (int i = 0; i < textures.size(); i++) {
+	for (int i = 0; i < textures.size(); i++) {
 		shader.setInt("tex", i);
 		textures[i].bind(i);
-	}*/
-
-	textures[1].bind();
-	shader.setInt("tex", 0);
+	}
 	
 	glBindVertexArray(vao);
 	glDrawElements(GL_TRIANGLES, indices.size(), GL_UNSIGNED_INT, NULL);
