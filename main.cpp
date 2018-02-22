@@ -9,35 +9,33 @@
 #include "Camera.h"
 #include "Model.h"
 
-static void key_callback(GLFWwindow* window, int key, int scancode, int action, int mods);
 static void mouse_callback(GLFWwindow* window, double xpos, double ypos);
-static void update();
-static void move();
+static void update(GLFWwindow* window);
+static void move(GLFWwindow* window);
 
 float deltaTime = 0.0f;
 float lastFrame = 0.0f;
 
 const int SCR_WIDTH = 800, SCR_HEIGHT = 600;
 
-GLFWwindow* window;
-Shader* shader;
-Camera* camera;
+Camera camera({ 0.0f, 0.0f, -10.0f });
 
 int main() {
+	GLFWwindow* window;
+
 	if (!glfwInit())
 		return -1;
 
 	glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 3);
 	glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 3);
 
-	window = glfwCreateWindow(SCR_WIDTH, SCR_HEIGHT, "Assimp kill me!", NULL, NULL);
+	window = glfwCreateWindow(SCR_WIDTH, SCR_HEIGHT, "Assimp improving", NULL, NULL);
 
 	if (!window) {
 		glfwTerminate();
 		return -1;
 	}
 
-	glfwSetKeyCallback(window, key_callback);
 	glfwSetCursorPosCallback(window, mouse_callback);
 	glfwMakeContextCurrent(window);
 	glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
@@ -50,84 +48,78 @@ int main() {
 	glEnable(GL_DEPTH_TEST);
 	glClearColor(0.0, 0.4, 0.8, 1.0);
 	
-	shader = new Shader("modelvert.glsl", "modelfrag.glsl");
-	camera = new Camera({ 0.0f, 0.0f, -10.0f });
+	Shader shader("modelvert.glsl", "modelfrag.glsl");
 
-	glm::mat4 projection, view, model;
-	model = glm::mat4(1.0);
-	view = camera->getViewNatrix();
+	glm::mat4 projection, model;
+	model = glm::mat4();
 	projection = glm::perspective(glm::radians(45.0f), (float)SCR_WIDTH / (float)SCR_HEIGHT, 0.1f, 500.0f);
 
-	shader->use();
-	shader->setMat4("model", model);
-	shader->setMat4("view", view);
-	shader->setMat4("proj", projection);
+	shader.use();
+	shader.setMat4("model", model);
+	shader.setMat4("proj", projection);
+	shader.setMat4("view", camera.getViewNatrix());
+	shader.setVec3("viewPos", camera.getPosition());
 
-	Model m("Resources/statue/statue.obj");
+	Model statue("Resources/statue/statue.obj");
+	Model sphere("Resources/sphere2.obj");
+	//Model cube("Resources/cube.obj");
+
 
 	while (!glfwWindowShouldClose(window)) {
-		update();
+		update(window);
 
-		m.render(*shader);
+		shader.setMat4("view", camera.getViewNatrix());
+		shader.setVec3("viewPos", camera.getPosition());
+
+		model = glm::mat4();
+		shader.setMat4("model", model);
+		statue.render(shader);
+
+		model = translate(model, {10.0 ,0.0 ,0.0});
+		shader.setMat4("model", model);
+		sphere.render(shader);
 
 		glfwSwapBuffers(window);
 		glfwPollEvents();
 	}
 
-	delete camera;
-	delete shader;
-
 	glfwTerminate();
 	return 0;
 }
 
-static void update() {
+static void update(GLFWwindow* window) {
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
 	float currentFrame = glfwGetTime();
 	deltaTime = currentFrame - lastFrame;
 	lastFrame = currentFrame;
 
-	move();
+	move(window);
 }
 
-static void move() {
+static void move(GLFWwindow* window) {
 	float speed = 0.06f; // temp
 
+	if (glfwGetKey(window,GLFW_KEY_ESCAPE) == GLFW_PRESS)
+		glfwSetWindowShouldClose(window, GLFW_TRUE);
+
 	/* LEFT -RIGHT */
-	if (glfwGetKey(window, GLFW_KEY_A) == GLFW_PRESS) {
-		camera->move({ speed, 0, 0 });
-		shader->setMat4("view", camera->getViewNatrix());
-	}
-	else if (glfwGetKey(window, GLFW_KEY_D) == GLFW_PRESS) {
-		camera->move({ -speed, 0, 0 });
-		shader->setMat4("view", camera->getViewNatrix());
-	}
+	if (glfwGetKey(window, GLFW_KEY_A) == GLFW_PRESS)
+		camera.move(LEFT, speed);
+	else if (glfwGetKey(window, GLFW_KEY_D) == GLFW_PRESS)
+		camera.move(RIGHT, speed);
 
 	/* FORWARD - BACKWARD */
-	if (glfwGetKey(window, GLFW_KEY_W) == GLFW_PRESS) {
-		camera->move({ 0, 0, speed });
-		shader->setMat4("view", camera->getViewNatrix());
-	}
-	else if (glfwGetKey(window, GLFW_KEY_S) == GLFW_PRESS) {
-		camera->move({ 0, 0, -speed });
-		shader->setMat4("view", camera->getViewNatrix());
-	}
+	if (glfwGetKey(window, GLFW_KEY_W) == GLFW_PRESS)
+		camera.move(FORWARD, speed);
+	else if (glfwGetKey(window, GLFW_KEY_S) == GLFW_PRESS)
+		camera.move(BACKWARD, speed);
 
 	/* UP - DOWN */
-	if (glfwGetKey(window, GLFW_KEY_SPACE) == GLFW_PRESS) {
-		camera->move({ 0, -speed, 0 });
-		shader->setMat4("view", camera->getViewNatrix());
-	}
-	else if (glfwGetKey(window, GLFW_KEY_LEFT_SHIFT) == GLFW_PRESS) {
-		camera->move({ 0, speed, 0 });
-		shader->setMat4("view", camera->getViewNatrix());
-	}
-}
-
-static void key_callback(GLFWwindow* window, int key, int scancode, int action, int mods) {
-	if (key == GLFW_KEY_ESCAPE && action == GLFW_PRESS)
-		glfwSetWindowShouldClose(window, GLFW_TRUE);
+	if (glfwGetKey(window, GLFW_KEY_SPACE) == GLFW_PRESS)
+		camera.move(UP, speed);
+	else if (glfwGetKey(window, GLFW_KEY_LEFT_SHIFT) == GLFW_PRESS)
+		camera.move(DOWN, speed);
 }
 
 static void mouse_callback(GLFWwindow* window, double xpos, double ypos) {
@@ -147,8 +139,7 @@ static void mouse_callback(GLFWwindow* window, double xpos, double ypos) {
 		oldX = xpos;
 		oldY = ypos;
 
-		camera->rotate({ dx * speed, 0.0f, 0.0f });
-		camera->rotate({ 0.0f, dy * speed, 0.0f });
-		shader->setMat4("view", camera->getViewNatrix());
+		camera.rotate({ dx * speed, 0.0f, 0.0f });
+		camera.rotate({ 0.0f, dy * speed, 0.0f });
 	}
 }

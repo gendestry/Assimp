@@ -21,17 +21,17 @@ private:
 	std::vector<Mesh*> meshes;
 	std::string directory;
 
-	void loadModel(std::string filename);
+	void loadModel(const std::string& filename);
 	void processNodeRecursive(aiNode* node, const aiScene* scene);
 	Mesh* createMesh(aiMesh* mesh, const aiScene* scene);
 };
 
 void Model::render(const Shader& shader) {
-	for (unsigned i = 0; i < meshes.size(); i++)
+	for (unsigned i = 0; i < meshes.size(); i++) 
 		meshes[i]->render(shader);
 }
 
-void Model::loadModel(std::string filepath) {
+void Model::loadModel(const std::string& filepath) {
 	Assimp::Importer importer;
 	const aiScene* scene = importer.ReadFile(filepath, aiProcess_Triangulate | aiProcess_GenSmoothNormals | aiProcess_FlipUVs | aiProcess_JoinIdenticalVertices);
 
@@ -57,7 +57,8 @@ void Model::processNodeRecursive(aiNode* node, const aiScene* scene){
 Mesh* Model::createMesh(aiMesh* mesh, const aiScene* scene){
 	std::vector<Vertex> vertexes;
 	std::vector<unsigned int> indices;
-	std::vector<Texture> textures;
+	std::vector<Material> mats;
+	mats.resize(scene->mNumMaterials);
 
 	for (int i = 0; i < mesh->mNumVertices; ++i) {
 		Vertex vertex;
@@ -75,22 +76,55 @@ Mesh* Model::createMesh(aiMesh* mesh, const aiScene* scene){
 			indices.push_back(face.mIndices[j]);
 	}
 
-	int diffuse = 0, spec = 0;
-	for (unsigned i = 0; i < scene->mNumMaterials; i++) {
+	for (unsigned i = 0; i < scene->mNumMaterials; i++) { // TODO: normal, height
 		const aiMaterial* mat = scene->mMaterials[i];
-		// TODO: add multiple texture type support
-		
+		aiColor3D color;
+
+		// DIFFUSE COLOR
+		if (mat->Get(AI_MATKEY_COLOR_DIFFUSE, color) != AI_FAILURE)
+			mats[i].diffuseColor = { color.r, color.g, color.b };
+		else {
+			mats[i].diffuseColor = { 1.0, 1.0, 1.0 };
+			std::cout << "NO DIFFUSE COLOR WTF\n";
+		}
+
+		// SPECULAR COLOR
+		if (mat->Get(AI_MATKEY_COLOR_SPECULAR, color) != AI_FAILURE)
+			mats[i].specularColor = { color.r, color.g, color.b };
+		else {
+			mats[i].specularColor = { 1.0, 1.0, 1.0 };
+			std::cout << "NO SPECULAR COLOR WTF\n";
+		}
+
+		// DIFFUSE TEXTURE
 		if (mat->GetTextureCount(aiTextureType_DIFFUSE) > 0) {
 			aiString path;
 			mat->GetTexture(aiTextureType_DIFFUSE, 0, &path, 0, 0, 0, 0, 0);
-			textures.emplace_back(directory + "/" + path.data, DIFFUSE);
-			diffuse++;
-		}
-		if (diffuse != i + 1) {
-			textures.emplace_back("Resources/white.jpg", DIFFUSE);
-			diffuse++;
-		}
-	}
+			mats[i].diffuseTex = Texture(directory + "/" + path.data, DIFFUSE);
 
-	return new Mesh(vertexes, indices, textures);
+			if(mats[i].diffuseTex.Success() == false)
+				mats[i].diffuseTex = Texture("Resources/white.jpg", DIFFUSE);
+		}
+		else {
+			mats[i].diffuseTex = Texture("Resources/white.jpg", DIFFUSE);
+		}
+
+		// SPECULAR TEXTURE
+		if (mat->GetTextureCount(aiTextureType_SPECULAR) > 0) {
+			aiString path;
+			mat->GetTexture(aiTextureType_SPECULAR, 0, &path, 0, 0, 0, 0, 0);
+			mats[i].specularTex = Texture(directory + "/" + path.data, SPECULAR);
+
+			if (mats[i].specularTex.Success() == false)
+				mats[i].specularTex = Texture("Resources/white.jpg", SPECULAR);
+		}
+		else {
+			mats[i].specularTex = Texture("Resources/white.jpg", SPECULAR);
+		}
+
+		/*if (mat->Get(AI_MATKEY_SHININESS, color) != AI_FAILURE)
+			std::cout << color.r << " " << color.g << " " << color.b << "\n";*/
+
+	}
+	return new Mesh(vertexes, indices, mats);
 }

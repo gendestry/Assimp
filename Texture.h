@@ -22,6 +22,7 @@ public:
 	unsigned id;
 	Type type;
 
+	Texture() { id = 0; }
 	Texture(std::string path, Type t);
 
 	void bind(unsigned pos = 0) const;

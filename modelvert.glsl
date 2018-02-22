@@ -7,11 +7,13 @@ uniform mat4 model;
 uniform mat4 view;
 uniform mat4 proj;
 
-out vec4 norm;
 out vec2 texcoord;
+out vec3 fragPos;
+out vec3 norm;
 
 void main() {
-	norm = transpose(inverse(model)) * vec4(anormal, 1.0); // if model * view then the light follows you
 	texcoord = atexcoord;
+	fragPos = vec3(model * vec4(apos, 1.0));
+	norm = vec3(transpose(inverse(model)) * vec4(anormal, 1.0)); // if model * view then the light follows you
 	gl_Position = proj * view * model * vec4(apos, 1.0);
 }

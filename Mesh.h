@@ -13,20 +13,28 @@ struct Vertex {
 	glm::vec2 texcoord;
 };
 
+struct Material {
+	Material(){}
+	glm::vec3 diffuseColor;
+	glm::vec3 specularColor;
+	Texture diffuseTex;
+	Texture specularTex;
+};
+
 class Mesh {
 private:
 	std::vector<Vertex> vertexes;
 	std::vector<unsigned> indices;
-	std::vector<Texture> textures;
+	std::vector<Material> materials;
 
 	unsigned vao, vbo, ebo;
 public:
-	Mesh(std::vector<Vertex> vert, std::vector<unsigned int> ind, std::vector<Texture> texs);
+	Mesh(std::vector<Vertex> vert, std::vector<unsigned int> ind, std::vector<Material> mats);
 	~Mesh();
 	void render(const Shader& shader);
 };
 
-Mesh::Mesh(std::vector<Vertex> vert, std::vector<unsigned int> ind, std::vector<Texture> texs) : vertexes(vert), indices(ind), textures(texs) {
+Mesh::Mesh(std::vector<Vertex> vert, std::vector<unsigned int> ind, std::vector<Material> mats) : vertexes(vert), indices(ind), materials(mats) {
 	glGenVertexArrays(1, &vao);
 	glBindVertexArray(vao);
 
@@ -48,10 +56,10 @@ Mesh::Mesh(std::vector<Vertex> vert, std::vector<unsigned int> ind, std::vector<
 }
 
 Mesh::~Mesh() {
-	for (int i = 0; i < textures.size(); i++)
-		glDeleteTextures(1, &textures[i].id);
+	for (int i = 0; i < materials.size(); i++)
+		glDeleteTextures(1, &materials[i].diffuseTex.id);
 
-	textures.clear();
+	materials.clear();
 
 	glDeleteBuffers(1, &ebo);
 	glDeleteBuffers(1, &vbo);
@@ -59,10 +67,18 @@ Mesh::~Mesh() {
 }
 
 void Mesh::render(const Shader& shader) {
-	for (int i = 0; i < textures.size(); i++) {
-		shader.setInt("tex", i);
-		textures[i].bind(i);
+	shader.use();
+
+	for (int i = 0; i < materials.size(); i++) {
+		shader.setVec3(("materials[" + std::to_string(i) + "].diffuseColor").c_str(), materials[i].diffuseColor);
+		shader.setVec3(("materials[" + std::to_string(i) + "].specularColor").c_str(), materials[i].specularColor);
+		shader.setInt(("materials[" + std::to_string(i) + "].diffuseTex").c_str(), 0 + i * 2);
+		materials[1].diffuseTex.bind(0 + i * 2);
+		shader.setInt(("materials[" + std::to_string(i) + "].specularTex").c_str(), 1 + i * 2);
+		materials[1].specularTex.bind(1 + i * 2);
 	}
+
+	shader.setInt("numMaterials", materials.size());
 	
 	glBindVertexArray(vao);
 	glDrawElements(GL_TRIANGLES, indices.size(), GL_UNSIGNED_INT, NULL);
