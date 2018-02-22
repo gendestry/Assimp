@@ -18,7 +18,7 @@ float lastFrame = 0.0f;
 
 const int SCR_WIDTH = 800, SCR_HEIGHT = 600;
 
-Camera camera({ 0.0f, 0.0f, -10.0f });
+Camera camera({ 0.0f, 0.0f, 10.0f });
 
 int main() {
 	GLFWwindow* window;

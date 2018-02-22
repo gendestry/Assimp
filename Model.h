@@ -15,13 +15,13 @@
 
 class Model {
 public:
-	Model(const char* filename) { loadModel(filename); }
+	Model(std::string filename) { loadModel(filename); }
 	void render(const Shader& shader);
 private:
 	std::vector<Mesh*> meshes;
 	std::string directory;
 
-	void loadModel(const std::string& filename);
+	void loadModel(std::string filepath);
 	void processNodeRecursive(aiNode* node, const aiScene* scene);
 	Mesh* createMesh(aiMesh* mesh, const aiScene* scene);
 };
@@ -31,7 +31,7 @@ void Model::render(const Shader& shader) {
 		meshes[i]->render(shader);
 }
 
-void Model::loadModel(const std::string& filepath) {
+void Model::loadModel(std::string filepath) {
 	Assimp::Importer importer;
 	const aiScene* scene = importer.ReadFile(filepath, aiProcess_Triangulate | aiProcess_GenSmoothNormals | aiProcess_FlipUVs | aiProcess_JoinIdenticalVertices);
 
@@ -41,7 +41,7 @@ void Model::loadModel(const std::string& filepath) {
 		directory = filepath.substr(0, filepath.find_last_of('/'));
 		processNodeRecursive(scene->mRootNode, scene);
 	}
-		
+
 }
 
 void Model::processNodeRecursive(aiNode* node, const aiScene* scene){
@@ -58,6 +58,9 @@ Mesh* Model::createMesh(aiMesh* mesh, const aiScene* scene){
 	std::vector<Vertex> vertexes;
 	std::vector<unsigned int> indices;
 	std::vector<Material> mats;
+
+	vertexes.resize(mesh->mNumVertices);
+	indices.resize(mesh->mNumFaces * 3);
 	mats.resize(scene->mNumMaterials);
 
 	for (int i = 0; i < mesh->mNumVertices; ++i) {
@@ -67,13 +70,13 @@ Mesh* Model::createMesh(aiMesh* mesh, const aiScene* scene){
 		vertex.normal = mesh->HasNormals() ? glm::vec3(mesh->mNormals[i].x, mesh->mNormals[i].y, mesh->mNormals[i].z) : glm::vec3(0, 0, 0);
 		vertex.texcoord = mesh->HasTextureCoords(0) ? glm::vec2(mesh->mTextureCoords[0][i].x, mesh->mTextureCoords[0][i].y) : glm::vec2(0, 0);
 
-		vertexes.push_back(vertex);
+		vertexes[i] = vertex;
 	}
 
 	for (int i = 0; i < mesh->mNumFaces; ++i) {
 		aiFace face = mesh->mFaces[i];
 		for (int j = 0; j < face.mNumIndices; ++j)
-			indices.push_back(face.mIndices[j]);
+			indices[i * 3 + j] = face.mIndices[j];
 	}
 
 	for (unsigned i = 0; i < scene->mNumMaterials; i++) { // TODO: normal, height
