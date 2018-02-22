@@ -79,6 +79,7 @@ Mesh* Model::createMesh(aiMesh* mesh, const aiScene* scene){
 			indices[i * 3 + j] = face.mIndices[j];
 	}
 
+	std::cout << scene->mNumMaterials << std::endl;
 	for (unsigned i = 0; i < scene->mNumMaterials; i++) { // TODO: normal, height
 		const aiMaterial* mat = scene->mMaterials[i];
 		aiColor3D color;
@@ -90,6 +91,7 @@ Mesh* Model::createMesh(aiMesh* mesh, const aiScene* scene){
 			mats[i].diffuseColor = { 1.0, 1.0, 1.0 };
 			std::cout << "NO DIFFUSE COLOR WTF\n";
 		}
+		//std::cout << mats[i].diffuseColor.x << " " << mats[i].diffuseColor.y << " " << mats[i].diffuseColor.z << "\n";
 
 		// SPECULAR COLOR
 		if (mat->Get(AI_MATKEY_COLOR_SPECULAR, color) != AI_FAILURE)
