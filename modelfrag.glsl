@@ -37,9 +37,9 @@ void main() {
 	vec4 texcolor = vec4(1.0);
 	for(int i = 0; i < numMaterials; i++){
 		diffuse *= vec4(materials[i].diffuseColor, 1.0);
-		specular *= vec4(materials[i].specularColor, 1.0);
-		diffuse *= texture(materials[i].diffuseTex, texcoord);
-		texcolor *= texture(materials[i].specularTex, texcoord);
+		//specular *= vec4(materials[i].specularColor, 1.0);
+		//diffuse *= texture(materials[i].diffuseTex, texcoord);
+		//texcolor *= texture(materials[i].specularTex, texcoord);
 	}
 	
 	//color = vec4(ambient + diffuse, 1.0) * texcolor + vec4(specular, 0.0);

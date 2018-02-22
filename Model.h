@@ -1,4 +1,5 @@
 #pragma once
+#define DEBUG 1
 
 #include <vector>
 #include <iostream>
@@ -33,7 +34,7 @@ void Model::render(const Shader& shader) {
 
 void Model::loadModel(std::string filepath) {
 	Assimp::Importer importer;
-	const aiScene* scene = importer.ReadFile(filepath, aiProcess_Triangulate | aiProcess_GenSmoothNormals | aiProcess_FlipUVs | aiProcess_JoinIdenticalVertices);
+	const aiScene* scene = importer.ReadFile(filepath, aiProcess_Triangulate | aiProcess_GenSmoothNormals | aiProcess_FlipUVs | aiProcess_JoinIdenticalVertices | aiProcess_RemoveRedundantMaterials);
 
 	if (!scene || scene->mFlags & AI_SCENE_FLAGS_INCOMPLETE || !scene->mRootNode)
 		std::cout << "Couldn't load the model\n";
@@ -79,7 +80,6 @@ Mesh* Model::createMesh(aiMesh* mesh, const aiScene* scene){
 			indices[i * 3 + j] = face.mIndices[j];
 	}
 
-	std::cout << scene->mNumMaterials << std::endl;
 	for (unsigned i = 0; i < scene->mNumMaterials; i++) { // TODO: normal, height
 		const aiMaterial* mat = scene->mMaterials[i];
 		aiColor3D color;
@@ -91,7 +91,6 @@ Mesh* Model::createMesh(aiMesh* mesh, const aiScene* scene){
 			mats[i].diffuseColor = { 1.0, 1.0, 1.0 };
 			std::cout << "NO DIFFUSE COLOR WTF\n";
 		}
-		//std::cout << mats[i].diffuseColor.x << " " << mats[i].diffuseColor.y << " " << mats[i].diffuseColor.z << "\n";
 
 		// SPECULAR COLOR
 		if (mat->Get(AI_MATKEY_COLOR_SPECULAR, color) != AI_FAILURE)
@@ -129,6 +128,13 @@ Mesh* Model::createMesh(aiMesh* mesh, const aiScene* scene){
 
 		/*if (mat->Get(AI_MATKEY_SHININESS, color) != AI_FAILURE)
 			std::cout << color.r << " " << color.g << " " << color.b << "\n";*/
+
+#if DEBUG == 1
+		std::cout << "NumMaterials: " << scene->mNumMaterials << "\n";
+		std::cout << "DiffuseColor: " << mats[i].diffuseColor.x << " " << mats[i].diffuseColor.y << " " << mats[i].diffuseColor.z << "\n";
+		std::cout << "SpecularColor: " << mats[i].specularColor.x << " " << mats[i].specularColor.y << " " << mats[i].specularColor.z << "\n";
+		std::cout << "DiffuseTex: " << mats[i].diffuseTex.path << "\nSpecularTex: " << mats[i].specularTex.path << "\n\n";
+#endif
 
 	}
 	return new Mesh(vertexes, indices, mats);
