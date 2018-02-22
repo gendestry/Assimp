@@ -60,10 +60,10 @@ int main() {
 	shader.setMat4("view", camera.getViewNatrix());
 	shader.setVec3("viewPos", camera.getPosition());
 
-	Model statue("Resources/statue/statue.obj");
-	Model sphere("Resources/sphere2.obj");
+	//Model statue("Resources/statue/statue.obj");
+	//Model sphere("Resources/sphere2.obj");
 	//Model cube("Resources/cube.obj");
-
+	Model tree("Resources/polybridge_tree.obj");
 
 	while (!glfwWindowShouldClose(window)) {
 		update(window);
@@ -71,13 +71,15 @@ int main() {
 		shader.setMat4("view", camera.getViewNatrix());
 		shader.setVec3("viewPos", camera.getPosition());
 
-		model = glm::mat4();
+		/*model = glm::mat4();
 		shader.setMat4("model", model);
 		statue.render(shader);
 
 		model = translate(model, {10.0 ,0.0 ,0.0});
 		shader.setMat4("model", model);
-		sphere.render(shader);
+		sphere.render(shader);*/
+
+		tree.render(shader);
 
 		glfwSwapBuffers(window);
 		glfwPollEvents();

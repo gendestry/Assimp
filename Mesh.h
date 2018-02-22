@@ -25,16 +25,16 @@ class Mesh {
 private:
 	std::vector<Vertex> vertexes;
 	std::vector<unsigned> indices;
-	std::vector<Material> materials;
+	const Material& material;
 
 	unsigned vao, vbo, ebo;
 public:
-	Mesh(std::vector<Vertex> vert, std::vector<unsigned int> ind, std::vector<Material> mats);
+	Mesh(std::vector<Vertex> vert, std::vector<unsigned int> ind, const Material& mat);
 	~Mesh();
 	void render(const Shader& shader);
 };
 
-Mesh::Mesh(std::vector<Vertex> vert, std::vector<unsigned int> ind, std::vector<Material> mats) : vertexes(vert), indices(ind), materials(mats) {
+Mesh::Mesh(std::vector<Vertex> vert, std::vector<unsigned int> ind, const Material& mat) : vertexes(vert), indices(ind), material(mat) {
 	glGenVertexArrays(1, &vao);
 	glBindVertexArray(vao);
 
@@ -56,11 +56,6 @@ Mesh::Mesh(std::vector<Vertex> vert, std::vector<unsigned int> ind, std::vector<
 }
 
 Mesh::~Mesh() {
-	for (int i = 0; i < materials.size(); i++)
-		glDeleteTextures(1, &materials[i].diffuseTex.id);
-
-	materials.clear();
-
 	glDeleteBuffers(1, &ebo);
 	glDeleteBuffers(1, &vbo);
 	glDeleteVertexArrays(1, &vao);
@@ -69,16 +64,12 @@ Mesh::~Mesh() {
 void Mesh::render(const Shader& shader) {
 	shader.use();
 
-	for (int i = 0; i < materials.size(); i++) {
-		shader.setVec3(("materials[" + std::to_string(i) + "].diffuseColor").c_str(), materials[i].diffuseColor);
-		shader.setVec3(("materials[" + std::to_string(i) + "].specularColor").c_str(), materials[i].specularColor);
-		shader.setInt(("materials[" + std::to_string(i) + "].diffuseTex").c_str(), 0 + i * 2);
-		materials[i].diffuseTex.bind(0 + i * 2);
-		shader.setInt(("materials[" + std::to_string(i) + "].specularTex").c_str(), 1 + i * 2);
-		materials[i].specularTex.bind(1 + i * 2);
-	}
-
-	shader.setInt("numMaterials", materials.size());
+	shader.setVec3("diffuseColor", material.diffuseColor);
+	shader.setVec3("specularColor", material.specularColor);
+	shader.setInt("diffuseTex", 0);
+	material.diffuseTex.bind(0);
+	shader.setInt("specularTex", 1);
+	material.specularTex.bind(1);
 	
 	glBindVertexArray(vao);
 	glDrawElements(GL_TRIANGLES, indices.size(), GL_UNSIGNED_INT, NULL);
