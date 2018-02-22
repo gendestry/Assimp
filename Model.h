@@ -1,5 +1,5 @@
 #pragma once
-#define DEBUG 1
+#define DEBUG 0
 
 #include <vector>
 #include <iostream>
@@ -126,14 +126,14 @@ Mesh* Model::createMesh(aiMesh* mesh, const aiScene* scene){
 			mats[i].specularTex = Texture("Resources/white.jpg", SPECULAR);
 		}
 
-		/*if (mat->Get(AI_MATKEY_SHININESS, color) != AI_FAILURE)
-			std::cout << color.r << " " << color.g << " " << color.b << "\n";*/
-
 #if DEBUG == 1
 		std::cout << "NumMaterials: " << scene->mNumMaterials << "\n";
 		std::cout << "DiffuseColor: " << mats[i].diffuseColor.x << " " << mats[i].diffuseColor.y << " " << mats[i].diffuseColor.z << "\n";
 		std::cout << "SpecularColor: " << mats[i].specularColor.x << " " << mats[i].specularColor.y << " " << mats[i].specularColor.z << "\n";
 		std::cout << "DiffuseTex: " << mats[i].diffuseTex.path << "\nSpecularTex: " << mats[i].specularTex.path << "\n\n";
+
+		if (mat->Get(AI_MATKEY_SHININESS, color) != AI_FAILURE)
+			std::cout << color.r << " " << color.g << " " << color.b << "\n";
 #endif
 
 	}

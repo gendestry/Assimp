@@ -73,9 +73,9 @@ void Mesh::render(const Shader& shader) {
 		shader.setVec3(("materials[" + std::to_string(i) + "].diffuseColor").c_str(), materials[i].diffuseColor);
 		shader.setVec3(("materials[" + std::to_string(i) + "].specularColor").c_str(), materials[i].specularColor);
 		shader.setInt(("materials[" + std::to_string(i) + "].diffuseTex").c_str(), 0 + i * 2);
-		materials[1].diffuseTex.bind(0 + i * 2);
+		materials[i].diffuseTex.bind(0 + i * 2);
 		shader.setInt(("materials[" + std::to_string(i) + "].specularTex").c_str(), 1 + i * 2);
-		materials[1].specularTex.bind(1 + i * 2);
+		materials[i].specularTex.bind(1 + i * 2);
 	}
 
 	shader.setInt("numMaterials", materials.size());
