@@ -24,6 +24,10 @@ public:
 	inline void rotate(glm::vec3 vec) { rotation += vec; }
 	inline void scale(glm::vec3 vec) { scaling += vec; }
 
+	inline void setPosition(glm::vec3 vec) { position = vec; }
+	inline void setRotation(glm::vec3 vec) { rotation = vec; }
+	inline void setScale(glm::vec3 vec) { scaling = vec; }
+
 	inline glm::vec3 getPosition() const { return position; }
 	inline glm::vec3 getRotation() const { return rotation; }
 	inline glm::vec3 getScale() const	 { return scaling; }
