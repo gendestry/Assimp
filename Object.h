@@ -31,9 +31,9 @@ public:
 	inline Model getModel() const { return model; }
 };
 
-Object::Object(const Model& m, glm::vec3 pos, glm::vec3 rot = glm::vec3(0.0), glm::vec3 sc = glm::vec3(0.0)): model(m), position(pos), rotation(rot), scaling(sc) {}
+Object::Object(const Model& m, glm::vec3 pos = glm::vec3(0.0), glm::vec3 rot = glm::vec3(0.0), glm::vec3 sc = glm::vec3(0.0)): model(m), position(pos), rotation(rot), scaling(sc) {}
 
-Object::Object(std::string filePath, glm::vec3 pos, glm::vec3 rot = glm::vec3(0.0), glm::vec3 sc = glm::vec3(1.0)) : position(pos), rotation(rot), scaling(sc) {
+Object::Object(std::string filePath, glm::vec3 pos = glm::vec3(0.0), glm::vec3 rot = glm::vec3(0.0), glm::vec3 sc = glm::vec3(1.0)) : position(pos), rotation(rot), scaling(sc) {
 	model.loadModel(filePath);
 }
 

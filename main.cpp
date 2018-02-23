@@ -63,6 +63,7 @@ int main() {
 	Object tree("Resources/polybridge_tree.obj", { 0.0, -2.0, -10.0 });
 	Object sphere("Resources/sphere2.obj", { 2.0, -1.0, 2.0 });
 	Object cube("Resources/cube.obj", { -2.0, 0.0, 0.0 });
+	//Object statue("Resources/statue/statue.obj");
 
 	while (!glfwWindowShouldClose(window)) {
 		update(window);
@@ -75,6 +76,8 @@ int main() {
 
 		cube.rotate({ 0.0, 0.01, 0.0 });
 		cube.render(shader);
+
+		//statue.render(shader);
 
 		glfwSwapBuffers(window);
 		glfwPollEvents();

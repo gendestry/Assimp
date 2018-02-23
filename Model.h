@@ -22,6 +22,7 @@ private:
 	std::vector<Texture> loadedTextures;
 	std::string directory;
 
+	void loadMaterials(const aiScene* scene);
 	void processNodeRecursive(aiNode* node, const aiScene* scene);
 	Mesh* createMesh(aiMesh* mesh, const aiScene* scene);
 public:
@@ -54,65 +55,97 @@ void Model::loadModel(std::string filepath) {
 	else {
 		directory = filepath.substr(0, filepath.find_last_of('/'));
 
-		// load materials
-		materials.resize(scene->mNumMaterials);
-		for (unsigned i = 0; i < scene->mNumMaterials; i++) { // TODO: normal, height
-			const aiMaterial* mat = scene->mMaterials[i];
-			aiColor3D color;
-
-			// DIFFUSE COLOR
-			if (mat->Get(AI_MATKEY_COLOR_DIFFUSE, color) != AI_FAILURE)
-				materials[i].diffuseColor = { color.r, color.g, color.b };
-			else {
-				materials[i].diffuseColor = { 1.0, 1.0, 1.0 };
-				std::cout << "NO DIFFUSE COLOR WTF\n";
-			}
-
-			// SPECULAR COLOR
-			if (mat->Get(AI_MATKEY_COLOR_SPECULAR, color) != AI_FAILURE)
-				materials[i].specularColor = { color.r, color.g, color.b };
-			else {
-				materials[i].specularColor = { 1.0, 1.0, 1.0 };
-				std::cout << "NO SPECULAR COLOR WTF\n";
-			}
-
-			// DIFFUSE TEXTURE
-			if (mat->GetTextureCount(aiTextureType_DIFFUSE) > 0) {
-				aiString path;
-				mat->GetTexture(aiTextureType_DIFFUSE, 0, &path, 0, 0, 0, 0, 0);
-				materials[i].diffuseTex = Texture(directory + "/" + path.data);
-
-				if (materials[i].diffuseTex.Success() == false)
-					materials[i].diffuseTex = Texture("Resources/white.jpg");
-			}
-			else {
-				materials[i].diffuseTex = Texture("Resources/white.jpg");
-			}
-
-			// SPECULAR TEXTURE
-			if (mat->GetTextureCount(aiTextureType_SPECULAR) > 0) {
-				aiString path;
-				mat->GetTexture(aiTextureType_SPECULAR, 0, &path, 0, 0, 0, 0, 0);
-				materials[i].specularTex = Texture(directory + "/" + path.data);
-
-				if (materials[i].specularTex.Success() == false)
-					materials[i].specularTex = Texture("Resources/white.jpg");
-			}
-			else {
-				materials[i].specularTex = Texture("Resources/white.jpg");
-			}
-		}
-
-		if (scene->mNumMaterials == 0) {
-			Material temp;
-			temp.diffuseTex = Texture("Resources/white.jpg");
-			temp.specularTex = Texture("Resources/white.jpg");
-			temp.diffuseColor = glm::vec3{ 1.0 };
-			temp.specularColor = glm::vec3{ 1.0 };
-			materials.push_back(temp);
-		}
-
+		loadMaterials(scene);
 		processNodeRecursive(scene->mRootNode, scene);
+	}
+}
+
+void Model::loadMaterials(const aiScene* scene) {
+	Texture def("Resources/white.jpg");
+
+	materials.resize(scene->mNumMaterials);
+	for (unsigned i = 0; i < scene->mNumMaterials; i++) { // TODO: normal, height
+		const aiMaterial* mat = scene->mMaterials[i];
+		aiColor3D color;
+
+		// DIFFUSE COLOR
+		if (mat->Get(AI_MATKEY_COLOR_DIFFUSE, color) != AI_FAILURE)
+			materials[i].diffuseColor = { color.r, color.g, color.b };
+		else {
+			materials[i].diffuseColor = { 1.0, 1.0, 1.0 };
+			std::cout << "NO DIFFUSE COLOR WTF\n";
+		}
+
+		// SPECULAR COLOR
+		if (mat->Get(AI_MATKEY_COLOR_SPECULAR, color) != AI_FAILURE)
+			materials[i].specularColor = { color.r, color.g, color.b };
+		else {
+			materials[i].specularColor = { 1.0, 1.0, 1.0 };
+			std::cout << "NO SPECULAR COLOR WTF\n";
+		}
+
+		// DIFFUSE TEXTURE
+		if (mat->GetTextureCount(aiTextureType_DIFFUSE) > 0) {
+			aiString path;
+			mat->GetTexture(aiTextureType_DIFFUSE, 0, &path, 0, 0, 0, 0, 0);
+
+			bool loaded = false;
+			for (const auto& e : loadedTextures) {
+				if (e.path == directory + "/" + path.data) {
+					materials[i].diffuseTex = e;
+					loaded = true;
+					break;
+				}
+			}
+
+			if (!loaded) {
+				Texture t(directory + "/" + path.data);
+
+				if (t.Success() == false) t = def;
+				else loadedTextures.push_back(t);
+
+				materials[i].diffuseTex = t;
+			}
+		}
+		else {
+			materials[i].diffuseTex = def;
+		}
+
+		// SPECULAR TEXTURE
+		if (mat->GetTextureCount(aiTextureType_SPECULAR) > 0) {
+			aiString path;
+			mat->GetTexture(aiTextureType_SPECULAR, 0, &path, 0, 0, 0, 0, 0);
+
+			bool loaded = false;
+			for (const auto& e : loadedTextures) {
+				if (e.path == directory + "/" + path.data) {
+					materials[i].specularTex = e;
+					loaded = true;
+					break;
+				}
+			}
+
+			if (!loaded) {
+				Texture t(directory + "/" + path.data);
+
+				if (t.Success() == false) t = def;
+				else loadedTextures.push_back(t);
+
+				materials[i].specularTex = t;
+			}
+		}
+		else {
+			materials[i].specularTex = def;
+		}
+	}
+
+	if (scene->mNumMaterials == 0) {
+		Material temp;
+		temp.diffuseTex = def;
+		temp.specularTex = def;
+		temp.diffuseColor = glm::vec3{ 1.0 };
+		temp.specularColor = glm::vec3{ 1.0 };
+		materials.push_back(temp);
 	}
 }
 
