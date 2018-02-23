@@ -5,9 +5,13 @@
 #include <glm/glm.hpp>
 #include <glm/gtc/matrix_transform.hpp>
 
+#define STB_IMAGE_IMPLEMENTATION
+#include "stb_image.h"
+
 #include "Shader.h"
 #include "Camera.h"
 #include "Object.h"
+#include "Cubemap.h"
 
 static void mouse_callback(GLFWwindow* window, double xpos, double ypos);
 static void update(GLFWwindow* window);
@@ -39,7 +43,7 @@ int main() {
 	glfwSetCursorPosCallback(window, mouse_callback);
 	glfwMakeContextCurrent(window);
 	glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
-	
+
 	if (glewInit() != 0)
 		return -1;
 
@@ -47,8 +51,17 @@ int main() {
 
 	glEnable(GL_DEPTH_TEST);
 	glClearColor(0.0, 0.4, 0.8, 1.0);
-	
+
 	Shader shader("modelvert.glsl", "modelfrag.glsl");
+	Shader skyboxShader("skyboxvert.glsl", "skyboxfrag.glsl");
+
+	Object tree("Resources/polybridge_tree.obj", { 0.0, -2.0, -10.0 });
+	Object sphere("Resources/sphere2.obj", { 2.0, -1.0, 2.0 });
+	Object cube("Resources/cube.obj");
+	Object plane("Resources/plane.obj", { 0.0, -5.0, 0.0 });
+	plane.scale({2.0, 1.0, 2.0 });
+
+	Cubemap skybox({ "Resources/skybox/right.jpg","Resources/skybox/left.jpg","Resources/skybox/top.jpg","Resources/skybox/bottom.jpg","Resources/skybox/front.jpg","Resources/skybox/back.jpg" });
 
 	glm::mat4 projection, model;
 	model = glm::mat4();
@@ -60,24 +73,30 @@ int main() {
 	shader.setMat4("view", camera.getViewNatrix());
 	shader.setVec3("viewPos", camera.getPosition());
 
-	Object tree("Resources/polybridge_tree.obj", { 0.0, -2.0, -10.0 });
-	Object sphere("Resources/sphere2.obj", { 2.0, -1.0, 2.0 });
-	Object cube("Resources/cube.obj", { -2.0, 0.0, 0.0 });
-	//Object statue("Resources/statue/statue.obj");
+	skyboxShader.use();
+	skyboxShader.setMat4("proj", projection);
+	skyboxShader.setMat4("view", camera.getViewNatrix());
 
 	while (!glfwWindowShouldClose(window)) {
 		update(window);
 
+		skyboxShader.use();
+		skyboxShader.setMat4("view", glm::mat4(glm::mat3(camera.getViewNatrix())));
+		glDepthMask(GL_FALSE);
+		skybox.bind();
+		glDrawArrays(GL_TRIANGLES, 0, 36);
+		glBindVertexArray(0);
+		glDepthMask(GL_TRUE);
+
+		shader.use();
 		shader.setMat4("view", camera.getViewNatrix());
 		shader.setVec3("viewPos", camera.getPosition());
 
+		tree.rotate({ 0.0, 0.01, 0.0 });
 		tree.render(shader);
 		sphere.render(shader);
-
-		cube.rotate({ 0.0, 0.01, 0.0 });
 		cube.render(shader);
-
-		//statue.render(shader);
+		plane.render(shader);
 
 		glfwSwapBuffers(window);
 		glfwPollEvents();

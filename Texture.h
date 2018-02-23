@@ -2,8 +2,8 @@
 #include <gl/glew.h>
 #include <iostream>
 
-#define STB_IMAGE_IMPLEMENTATION
-#include "stb_image.h"
+
+//#include "stb_image.h"
 
 class Texture {
 private:
@@ -26,10 +26,6 @@ Texture::Texture(std::string path) : path(path) {
 	unsigned char* data = stbi_load(path.c_str(), &width, &height, &nComp, 0);
 
 	if (data) {
-		int format = GL_RGBA;
-		if (nComp == 3)
-			format = GL_RGB;
-		
 		glGenTextures(1, &id);
 		glBindTexture(GL_TEXTURE_2D, id);
 

@@ -91,6 +91,7 @@ void Model::loadMaterials(const aiScene* scene) {
 
 			bool loaded = false;
 			for (const auto& e : loadedTextures) {
+				std::cout << e.path << " " << (directory + "/" + path.data) << "\n";
 				if (e.path == directory + "/" + path.data) {
 					materials[i].diffuseTex = e;
 					loaded = true;
