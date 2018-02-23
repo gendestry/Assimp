@@ -9,6 +9,8 @@
 #include <assimp/postprocess.h>
 #include <assimp/Importer.hpp>
 
+#include <GL/glew.h>
+
 #include "Shader.h"
 #include "Mesh.h"
 #include "Texture.h"
@@ -16,6 +18,7 @@
 class Model {
 public:
 	Model(std::string filename) { loadModel(filename); }
+	~Model();
 	void render(const Shader& shader);
 private:
 	std::vector<Mesh*> meshes;
@@ -26,6 +29,13 @@ private:
 	void processNodeRecursive(aiNode* node, const aiScene* scene);
 	Mesh* createMesh(aiMesh* mesh, const aiScene* scene);
 };
+
+Model::~Model() {
+	for (int i = 0; i < materials.size(); i++) {
+		glDeleteTextures(1, &materials[i].diffuseTex.id);
+		glDeleteTextures(1, &materials[i].specularTex.id);
+	}
+}
 
 void Model::render(const Shader& shader) {
 	for (unsigned i = 0; i < meshes.size(); i++) 
