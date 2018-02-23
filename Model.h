@@ -19,6 +19,7 @@ class Model {
 private:
 	std::vector<Mesh*> meshes;
 	std::vector<Material> materials;
+	std::vector<Texture> loadedTextures;
 	std::string directory;
 
 	void processNodeRecursive(aiNode* node, const aiScene* scene);
@@ -27,7 +28,7 @@ public:
 	Model() {}
 	Model(std::string filename) { loadModel(filename); }
 	~Model();
-	void render(const Shader& shader);
+	void render(Shader& shader);
 	void loadModel(std::string filepath);
 };
 
@@ -38,7 +39,7 @@ Model::~Model() {
 	}
 }
 
-void Model::render(const Shader& shader) {
+void Model::render(Shader& shader) {
 	shader.use();
 	for (unsigned i = 0; i < meshes.size(); i++) 
 		meshes[i]->render(shader);
@@ -79,27 +80,36 @@ void Model::loadModel(std::string filepath) {
 			if (mat->GetTextureCount(aiTextureType_DIFFUSE) > 0) {
 				aiString path;
 				mat->GetTexture(aiTextureType_DIFFUSE, 0, &path, 0, 0, 0, 0, 0);
-				materials[i].diffuseTex = Texture(directory + "/" + path.data, DIFFUSE);
+				materials[i].diffuseTex = Texture(directory + "/" + path.data);
 
 				if (materials[i].diffuseTex.Success() == false)
-					materials[i].diffuseTex = Texture("Resources/white.jpg", DIFFUSE);
+					materials[i].diffuseTex = Texture("Resources/white.jpg");
 			}
 			else {
-				materials[i].diffuseTex = Texture("Resources/white.jpg", DIFFUSE);
+				materials[i].diffuseTex = Texture("Resources/white.jpg");
 			}
 
 			// SPECULAR TEXTURE
 			if (mat->GetTextureCount(aiTextureType_SPECULAR) > 0) {
 				aiString path;
 				mat->GetTexture(aiTextureType_SPECULAR, 0, &path, 0, 0, 0, 0, 0);
-				materials[i].specularTex = Texture(directory + "/" + path.data, SPECULAR);
+				materials[i].specularTex = Texture(directory + "/" + path.data);
 
 				if (materials[i].specularTex.Success() == false)
-					materials[i].specularTex = Texture("Resources/white.jpg", SPECULAR);
+					materials[i].specularTex = Texture("Resources/white.jpg");
 			}
 			else {
-				materials[i].specularTex = Texture("Resources/white.jpg", SPECULAR);
+				materials[i].specularTex = Texture("Resources/white.jpg");
 			}
+		}
+
+		if (scene->mNumMaterials == 0) {
+			Material temp;
+			temp.diffuseTex = Texture("Resources/white.jpg");
+			temp.specularTex = Texture("Resources/white.jpg");
+			temp.diffuseColor = glm::vec3{ 1.0 };
+			temp.specularColor = glm::vec3{ 1.0 };
+			materials.push_back(temp);
 		}
 
 		processNodeRecursive(scene->mRootNode, scene);

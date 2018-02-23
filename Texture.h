@@ -5,14 +5,6 @@
 #define STB_IMAGE_IMPLEMENTATION
 #include "stb_image.h"
 
-enum Type {
-	AMBIENT,
-	DIFFUSE,
-	SPECULAR,
-	NORMAL,
-	HEIGHT
-};
-
 class Texture {
 private:
 	int width, height, nComp;
@@ -20,10 +12,9 @@ private:
 public:
 	std::string path;
 	unsigned id;
-	Type type;
 
 	Texture() { id = 0; }
-	Texture(std::string path, Type t);
+	Texture(std::string path);
 
 	void bind(unsigned pos = 0) const;
 	void unbind() const;
@@ -31,7 +22,7 @@ public:
 	inline bool Success() const { return success; }
 };
 
-Texture::Texture(std::string path, Type t) : path(path), type(t) {
+Texture::Texture(std::string path) : path(path) {
 	unsigned char* data = stbi_load(path.c_str(), &width, &height, &nComp, 0);
 
 	if (data) {

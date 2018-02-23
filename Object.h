@@ -16,7 +16,7 @@ public:
 	Object(const Model& m, glm::vec3 pos, glm::vec3 rot, glm::vec3 sc);
 	Object(std::string filePath, glm::vec3 pos, glm::vec3 rot, glm::vec3 sc);
 
-	void render(const Shader& shader);
+	void render(Shader& shader);
 
 	glm::mat4 getModelMatrix() const;
 
@@ -37,7 +37,7 @@ Object::Object(std::string filePath, glm::vec3 pos, glm::vec3 rot = glm::vec3(0.
 	model.loadModel(filePath);
 }
 
-void Object::render(const Shader& shader) {
+void Object::render(Shader& shader) {
 	shader.use();
 	shader.setMat4("model", getModelMatrix());
 	model.render(shader);

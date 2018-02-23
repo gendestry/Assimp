@@ -31,7 +31,7 @@ private:
 public:
 	Mesh(std::vector<Vertex> vert, std::vector<unsigned int> ind, const Material& mat);
 	~Mesh();
-	void render(const Shader& shader);
+	void render(Shader& shader);
 };
 
 Mesh::Mesh(std::vector<Vertex> vert, std::vector<unsigned int> ind, const Material& mat) : vertexes(vert), indices(ind), material(mat) {
@@ -61,7 +61,7 @@ Mesh::~Mesh() {
 	glDeleteVertexArrays(1, &vao);
 }
 
-void Mesh::render(const Shader& shader) {
+void Mesh::render(Shader& shader) {
 	shader.setVec3("diffuseColor", material.diffuseColor);
 	shader.setVec3("specularColor", material.specularColor);
 	shader.setInt("diffuseTex", 0);
