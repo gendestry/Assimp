@@ -7,7 +7,7 @@
 
 #include "Shader.h"
 #include "Camera.h"
-#include "Model.h"
+#include "Object.h"
 
 static void mouse_callback(GLFWwindow* window, double xpos, double ypos);
 static void update(GLFWwindow* window);
@@ -60,10 +60,9 @@ int main() {
 	shader.setMat4("view", camera.getViewNatrix());
 	shader.setVec3("viewPos", camera.getPosition());
 
-	//Model statue("Resources/statue/statue.obj");
-	//Model sphere("Resources/sphere2.obj");
-	//Model cube("Resources/cube.obj");
-	Model tree("Resources/polybridge_tree.obj");
+	Object tree("Resources/polybridge_tree.obj", { 0.0, -2.0, -10.0 });
+	Object sphere("Resources/sphere2.obj", { 2.0, -1.0, 2.0 });
+	Object cube("Resources/cube.obj", { -2.0, 0.0, 0.0 });
 
 	while (!glfwWindowShouldClose(window)) {
 		update(window);
@@ -71,15 +70,11 @@ int main() {
 		shader.setMat4("view", camera.getViewNatrix());
 		shader.setVec3("viewPos", camera.getPosition());
 
-		/*model = glm::mat4();
-		shader.setMat4("model", model);
-		statue.render(shader);
-
-		model = translate(model, {10.0 ,0.0 ,0.0});
-		shader.setMat4("model", model);
-		sphere.render(shader);*/
-
 		tree.render(shader);
+		sphere.render(shader);
+
+		cube.rotate({ 0.0, 0.01, 0.0 });
+		cube.render(shader);
 
 		glfwSwapBuffers(window);
 		glfwPollEvents();

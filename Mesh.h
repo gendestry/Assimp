@@ -14,7 +14,7 @@ struct Vertex {
 };
 
 struct Material {
-	Material(){}
+	Material() {}
 	glm::vec3 diffuseColor;
 	glm::vec3 specularColor;
 	Texture diffuseTex;
@@ -62,8 +62,6 @@ Mesh::~Mesh() {
 }
 
 void Mesh::render(const Shader& shader) {
-	shader.use();
-
 	shader.setVec3("diffuseColor", material.diffuseColor);
 	shader.setVec3("specularColor", material.specularColor);
 	shader.setInt("diffuseTex", 0);

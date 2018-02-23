@@ -16,18 +16,19 @@
 #include "Texture.h"
 
 class Model {
-public:
-	Model(std::string filename) { loadModel(filename); }
-	~Model();
-	void render(const Shader& shader);
 private:
 	std::vector<Mesh*> meshes;
 	std::vector<Material> materials;
 	std::string directory;
 
-	void loadModel(std::string filepath);
 	void processNodeRecursive(aiNode* node, const aiScene* scene);
 	Mesh* createMesh(aiMesh* mesh, const aiScene* scene);
+public:
+	Model() {}
+	Model(std::string filename) { loadModel(filename); }
+	~Model();
+	void render(const Shader& shader);
+	void loadModel(std::string filepath);
 };
 
 Model::~Model() {
@@ -38,6 +39,7 @@ Model::~Model() {
 }
 
 void Model::render(const Shader& shader) {
+	shader.use();
 	for (unsigned i = 0; i < meshes.size(); i++) 
 		meshes[i]->render(shader);
 }
