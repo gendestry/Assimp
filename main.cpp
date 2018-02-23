@@ -141,7 +141,7 @@ static void mouse_callback(GLFWwindow* window, double xpos, double ypos) {
 		oldX = xpos;
 		oldY = ypos;
 
-		camera.rotate({ dx * speed, 0.0f, 0.0f });
-		camera.rotate({ 0.0f, dy * speed, 0.0f });
+		camera.rotate({ dy * speed, 0.0f, 0.0f });
+		camera.rotate({ 0.0f, dx * speed, 0.0f });
 	}
 }

@@ -31,8 +31,8 @@ public:
 
 void Camera::updateMatrix() {
 	view = glm::mat4(1.0f);
-	view = glm::rotate(view, glm::radians(rotation.y), { 1.0f, 0.0f, 0.0f }); // pitch
-	view = glm::rotate(view, glm::radians(rotation.x), { 0.0f, 1.0f, 0.0f }); // yaw
+	view = glm::rotate(view, glm::radians(rotation.x), { 1.0f, 0.0f, 0.0f }); // pitch
+	view = glm::rotate(view, glm::radians(rotation.y), { 0.0f, 1.0f, 0.0f }); // yaw
 	view = glm::translate(view, -position);
 }
 
@@ -55,16 +55,16 @@ void Camera::move(MoveDir dir, float speed) {
 		pos.x = speed;
 
 	glm::vec3 temp;
-	temp.x = cos(glm::radians(rotation.x)) * pos.x - sin(glm::radians(rotation.x)) * pos.z * cos(glm::radians(rotation.y)) + pos.y * sin(glm::radians(rotation.x)) * sin(glm::radians(rotation.y));
-	temp.y = sin(glm::radians(rotation.y)) * pos.z + pos.y * cos(glm::radians(rotation.y));
-	temp.z = sin(glm::radians(rotation.x)) * pos.x + cos(glm::radians(rotation.x)) * pos.z * cos(glm::radians(rotation.y)) - pos.y * sin(glm::radians(rotation.y)) * cos(glm::radians(rotation.x));
+	temp.x = cos(glm::radians(rotation.y)) * pos.x - sin(glm::radians(rotation.y)) * pos.z * cos(glm::radians(rotation.x)) + pos.y * sin(glm::radians(rotation.y)) * sin(glm::radians(rotation.x));
+	temp.y = sin(glm::radians(rotation.x)) * pos.z + pos.y * cos(glm::radians(rotation.x));
+	temp.z = sin(glm::radians(rotation.y)) * pos.x + cos(glm::radians(rotation.y)) * pos.z * cos(glm::radians(rotation.x)) - pos.y * sin(glm::radians(rotation.x)) * cos(glm::radians(rotation.y));
 	position += temp;
 	updateMatrix();
 }
 
 void Camera::rotate(glm::vec3 rot) {
 	rotation += rot;
-	if (rotation.y > 90.0f) rotation.y = 90.0f;
-	if (rotation.y < -90.0f) rotation.y = -90.0f;
+	if (rotation.x > 90.0f) rotation.x = 90.0f;
+	if (rotation.x < -90.0f) rotation.x = -90.0f;
 	updateMatrix();
 }
