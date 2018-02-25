@@ -54,6 +54,7 @@ int main() {
 
 	Shader shader("modelvert.glsl", "modelfrag.glsl");
 	Shader skyboxShader("skyboxvert.glsl", "skyboxfrag.glsl");
+	Shader refshader("refvert.glsl", "reffrag.glsl");
 
 	Object tree("Resources/polybridge_tree.obj", { 0.0, -2.0, -10.0 });
 	Object sphere("Resources/sphere2.obj", { 2.0, -1.0, 2.0 });
@@ -76,17 +77,16 @@ int main() {
 	skyboxShader.use();
 	skyboxShader.setMat4("proj", projection);
 	skyboxShader.setMat4("view", camera.getViewNatrix());
+	skyboxShader.setInt("skybox", 0);
+
+	refshader.use();
+	refshader.setMat4("proj", projection);
+	refshader.setMat4("view", camera.getViewNatrix());
+	refshader.setVec3("viewPos", camera.getPosition());
+	refshader.setInt("skybox", 0);
 
 	while (!glfwWindowShouldClose(window)) {
 		update(window);
-
-		skyboxShader.use();
-		skyboxShader.setMat4("view", glm::mat4(glm::mat3(camera.getViewNatrix())));
-		glDepthMask(GL_FALSE);
-		skybox.bind();
-		glDrawArrays(GL_TRIANGLES, 0, 36);
-		glBindVertexArray(0);
-		glDepthMask(GL_TRUE);
 
 		shader.use();
 		shader.setMat4("view", camera.getViewNatrix());
@@ -95,8 +95,20 @@ int main() {
 		tree.rotate({ 0.0, 0.01, 0.0 });
 		tree.render(shader);
 		sphere.render(shader);
-		cube.render(shader);
 		plane.render(shader);
+
+		refshader.use();
+		refshader.setMat4("view", camera.getViewNatrix());
+		refshader.setVec3("viewPos", camera.getPosition());
+		cube.render(refshader);
+
+		skyboxShader.use();
+		skyboxShader.setMat4("view", glm::mat4(glm::mat3(camera.getViewNatrix())));
+		glDepthFunc(GL_LEQUAL);
+		skybox.bind();
+		glDrawArrays(GL_TRIANGLES, 0, 36);
+		glBindVertexArray(0);
+		glDepthFunc(GL_LESS);
 
 		glfwSwapBuffers(window);
 		glfwPollEvents();

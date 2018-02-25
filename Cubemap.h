@@ -82,7 +82,6 @@ Cubemap::Cubemap(std::vector<std::string> faces) : id(0) {
 }
 
 Cubemap::~Cubemap() {
-	std::cout << "called\n";
 	glDeleteTextures(1, &id);
 	glDeleteBuffers(1, &vbo);
 	glDeleteVertexArrays(1, &vao);
